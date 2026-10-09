@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:3000 https://cdnjs.cloudflare.com;">
+    <title>Fazenda II Barras | Saúde e Vacinas</title>
+     <link rel="icon" type="image/png" href="img/II Barras.png">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        :root { --bg-main: #f8fafc; --sidebar: #0f172a; --card-bg: #ffffff; --primary: #15803d; --text-dark: #0f172a; --text-light: #64748b; --border: #e2e8f0; --danger: #ef4444; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background-color: var(--bg-main); color: var(--text-dark); display: flex; min-height: 100vh; }
+        aside { width: 260px; background-color: var(--sidebar); color: white; padding: 2rem 1.2rem; display: flex; flex-direction: column; gap: 2rem; flex-shrink: 0; }
+        aside h2 { font-size: 1.2rem; color: #4ade80; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem; }
+        .menu { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+        .menu li a { color: #94a3b8; text-decoration: none; padding: 0.8rem 1rem; border-radius: 8px; display: flex; align-items: center; gap: 10px; font-weight: 500; }
+        .menu li a:hover, .menu li a.active { background-color: var(--primary); color: white; }
+        main { flex: 1; padding: 2rem; overflow-y: auto; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .panel { background: var(--card-bg); padding: 1.5rem; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid var(--border); margin-bottom: 2rem; }
+        .panel h3 { margin-bottom: 1rem; font-size: 1.1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+        .form-group { display: flex; flex-direction: column; gap: 0.3rem; }
+        .form-group.full-width { grid-column: 1 / -1; }
+        label { font-size: 0.85rem; font-weight: 600; color: #334155; }
+        input, select, textarea { padding: 0.6rem; border: 1px solid var(--border); border-radius: 8px; outline: none; }
+        button.btn-submit { grid-column: 1 / -1; background-color: var(--primary); color: white; padding: 0.8rem; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
+        .btn-export { background: #0284c7; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; margin-left: 5px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+        th, td { padding: 0.8rem; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+        th { background-color: #f8fafc; color: var(--text-light); font-weight: 600; }
+        .btn-delete { background: var(--danger); color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <aside>
+        <h2> II Barras</h2>
+        <ul class="menu">
+            <li><a href="index.html">📊 Controle Rebanho</a></li>
+            <li><a href="pasto.html">🌱 Manejo Pastos</a></li>
+            <li><a href="sanatorio.html" class="active">💉 Saúde e Vacinas</a></li>
+            <li><a href="financeiro.html">💰 Financeiro</a></li>
+            <li><a href="calculos.html">🧮 Calculadora Pecuária</a></li>
+            <li><a href="ia.html">🤖 Assistente IA</a></li>
+        </ul>
+    </aside>
+
+    <main>
+        <header>
+            <div><h1>Controle Sanitário e Medicamentos</h1></div>
+            <span>Data: <strong id="current-date"></strong></span>
+        </header>
+
+        <div class="panel">
+            <h3>Lançar Manejo Sanitário</h3>
+            <form id="sanatorioForm" class="form-grid">
+                <div class="form-group"><label for="data">Data</label><input type="date" id="data" required></div>
+                <div class="form-group"><label for="lote">Lote Alvo</label><input type="text" id="lote" placeholder="Ex: Lote Bezerros" required></div>
+                <div class="form-group">
+                    <label for="tipo_manejo">Tipo de Manejo</label>
+                    <select id="tipo_manejo">
+                        <option value="Vacinação">Vacinação</option>
+                        <option value="Vermifugação">Vermifugação</option>
+                        <option value="Tratamento">Tratamento Individual</option>
+                        <option value="Suplementação">Suplementação/Injetável</option>
+                    </select>
+                </div>
+                <div class="form-group"><label for="produto">Produto Utilizado</label><input type="text" id="produto" placeholder="Ex: Dectomax / Aftosa" required></div>
+                <div class="form-group"><label for="qtd_animais">Qtd Animais</label><input type="number" min="1" id="qtd_animais" value="1" required></div>
+                <div class="form-group"><label for="responsavel">Responsável</label><input type="text" id="responsavel" required></div>
+                <div class="form-group full-width"><label for="obs">Observação / Dosagem</label><textarea id="obs" rows="2"></textarea></div>
+                <button type="submit" class="btn-submit">Salvar Manejo Sanitário</button>
+            </form>
+        </div>
+
+        <div class="panel">
+            <h3>
+                Histórico Sanitário
+                <div>
+                    <button class="btn-export" onclick="exportarExcel()">Exportar Excel</button>
+                    <button class="btn-export" style="background:#dc2626;" onclick="exportarPDF()">Exportar PDF</button>
+                </div>
+            </h3>
+            <table id="tabelaSanatorio">
+                <thead>
+                    <tr><th>Data</th><th>Lote</th><th>Manejo</th><th>Produto</th><th>Qtd Animais</th><th>Responsável</th><th>Obs</th><th>Ação</th></tr>
+                </thead>
+                <tbody id="sanatorioTable"></tbody>
+            </table>
+        </div>
+    </main>
+
+    <script src="js/chat.js"></script>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api/sanatorio';
+        document.getElementById('data').value = new Date().toISOString().split('T')[0];
+        document.getElementById('current-date').innerText = new Date().toLocaleDateString('pt-BR');
+
+        function formatarDataBR(dataIso) {
+            if (!dataIso) return '-';
+            const [ano, mes, dia] = dataIso.split('-');
+            return `${dia}/${mes}/${ano}`;
+        }
+
+        function escapeHTML(str) {
+            return String(str || '').replace(/[&<>"']/g, match => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[match]));
+        }
+
+        async function carregarSanatorio() {
+            try {
+                const res = await fetch(API_URL);
+                if (!res.ok) throw new Error("Erro na solicitação.");
+                const dados = await res.json();
+                
+                const table = document.getElementById('sanatorioTable');
+                table.innerHTML = '';
+
+                dados.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${formatarDataBR(item.data_registro)}</td>
+                        <td><strong>${escapeHTML(item.lote)}</strong></td>
+                        <td>${escapeHTML(item.tipo_manejo)}</td>
+                        <td>${escapeHTML(item.produto)}</td>
+                        <td>${item.qtd_animais} cab.</td>
+                        <td>${escapeHTML(item.responsavel)}</td>
+                        <td>${escapeHTML(item.observacao || '-')}</td>
+                        <td><button class="btn-delete" onclick="deletarSanatorio(${item.id})">Apagar</button></td>
+                    `;
+                    table.appendChild(row);
+                });
+            } catch (err) { console.error(err); }
+        }
+
+        async function deletarSanatorio(id) {
+            if (confirm("Deseja apagar este registro sanitário?")) {
+                try {
+                    const res = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+                    if (res.ok) carregarSanatorio();
+                } catch(e) { alert("Erro ao excluir."); }
+            }
+        }
+
+        document.getElementById('sanatorioForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const payload = {
+                data_registro: document.getElementById('data').value,
+                lote: document.getElementById('lote').value,
+                tipo_manejo: document.getElementById('tipo_manejo').value,
+                produto: document.getElementById('produto').value,
+                qtd_animais: parseInt(document.getElementById('qtd_animais').value) || 0,
+                responsavel: document.getElementById('responsavel').value,
+                observacao: document.getElementById('obs').value
+            };
+
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    this.reset();
+                    document.getElementById('data').value = new Date().toISOString().split('T')[0];
+                    carregarSanatorio();
+                }
+            } catch(e) { alert("Falha no salvamento."); }
+        });
+
+        function exportarExcel() {
+            const tabelaOriginal = document.getElementById("tabelaSanatorio");
+            const tabelaClonada = tabelaOriginal.cloneNode(true);
+
+            tabelaClonada.querySelectorAll('tr').forEach(linha => {
+                if (linha.lastElementChild) {
+                    linha.lastElementChild.remove();
+                }
+            });
+
+            const wb = XLSX.utils.table_to_book(tabelaClonada, { sheet: "Sanatorio" });
+            XLSX.writeFile(wb, "Relatorio_Sanitario.xlsx");
+        }
+
+        function exportarPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.text("Relatório do Histórico Sanitário", 14, 15);
+            doc.autoTable({ 
+                html: '#tabelaSanatorio', 
+                startY: 20,
+                columns: [0, 1, 2, 3, 4, 5, 6]
+            });
+            doc.save("Relatorio_Sanitario.pdf");
+        }
+
+        carregarSanatorio();
+    </script>
+</body>
+</html>

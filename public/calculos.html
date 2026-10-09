@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:3000 https://cdnjs.cloudflare.com;">
+    <title>Fazenda II Barras | Calculadora Pecuária</title>
+     <link rel="icon" type="image/png" href="img/II Barras.png">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --bg-main: #f8fafc;
+            --sidebar: #0f172a;
+            --card-bg: #ffffff;
+            --primary: #15803d;
+            --primary-hover: #166534;
+            --text-dark: #0f172a;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+        body { background-color: var(--bg-main); color: var(--text-dark); display: flex; min-height: 100vh; }
+        aside { width: 260px; background-color: var(--sidebar); color: white; padding: 2rem 1.2rem; display: flex; flex-direction: column; gap: 2rem; flex-shrink: 0; }
+        aside h2 { font-size: 1.2rem; color: #4ade80; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem; }
+        .menu { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+        .menu li a { color: #94a3b8; text-decoration: none; padding: 0.8rem 1rem; border-radius: 8px; display: flex; align-items: center; gap: 10px; font-weight: 500; transition: all 0.2s; }
+        .menu li a:hover, .menu li a.active { background-color: var(--primary); color: white; }
+        main { flex: 1; padding: 2rem; overflow-y: auto; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .panel { background: var(--card-bg); padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid var(--border); }
+        .panel h3 { margin-bottom: 1rem; font-size: 1.1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; color: var(--primary); }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .form-group { display: flex; flex-direction: column; gap: 0.3rem; }
+        .form-group.full-width { grid-column: span 2; }
+        label { font-size: 0.85rem; font-weight: 600; color: #334155; }
+        input { padding: 0.6rem; border: 1px solid var(--border); border-radius: 8px; outline: none; transition: border-color 0.2s; }
+        input:focus { border-color: var(--primary); }
+        button.btn-calc { grid-column: span 2; background-color: var(--primary); color: white; padding: 0.8rem; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; margin-top: 0.5rem; transition: background 0.2s; }
+        button.btn-calc:hover { background-color: var(--primary-hover); }
+        .result-box { margin-top: 1rem; padding: 1rem; background-color: #f8fafc; border-radius: 8px; border: 1px solid var(--border); }
+        .result-box p { font-size: 0.95rem; margin-bottom: 0.4rem; }
+        .result-box strong { color: var(--primary); font-size: 1.1rem; }
+    </style>
+</head>
+<body>
+    <aside>
+        <h2> II Barras</h2>
+        <ul class="menu">
+            <li><a href="index.html">📊 Controle Rebanho</a></li>
+            <li><a href="pasto.html">🌱 Manejo Pastos</a></li>
+            <li><a href="sanatorio.html">💉 Saúde e Vacinas</a></li>
+            <li><a href="financeiro.html">💰 Financeiro</a></li>
+            <li><a href="calculos.html" class="active">🧮 Calculadora Pecuária</a></li>
+            <li><a href="ia.html">🤖 Assistente IA</a></li>
+        </ul>
+    </aside>
+
+    <main>
+        <header>
+            <div><h1>Calculadora Pecuária e Projeções</h1></div>
+            <span>Data: <strong id="current-date"></strong></span>
+        </header>
+
+        <div class="dashboard-grid">
+            <div class="panel">
+                <h3>1. Taxa de Lotação (UA / hectare)</h3>
+                <form id="lotacaoForm" class="form-grid" onsubmit="event.preventDefault(); calcularLotacao();">
+                    <div class="form-group"><label for="areaHectares">Área do Pasto (ha)</label><input type="number" step="0.1" min="0.1" id="areaHectares" value="10" required></div>
+                    <div class="form-group"><label for="numCabecas">Número de Cabeças</label><input type="number" min="0" id="numCabecas" value="25" required></div>
+                    <div class="form-group full-width"><label for="pesoMedio">Peso Médio dos Animais (kg)</label><input type="number" min="0" id="pesoMedio" value="380" required></div>
+                    <button type="submit" class="btn-calc">Calcular Lotação</button>
+                </form>
+
+                <div class="result-box">
+                    <p>Total de Unidades Animais (UA): <strong id="resUA">0,00 UA</strong></p>
+                    <p>Taxa de Lotação: <strong id="resTaxa">0,00 UA/ha</strong></p>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h3>2. Projeção de Ganho de Peso e Arrobas</h3>
+                <form id="ganhoForm" class="form-grid" onsubmit="event.preventDefault(); calcularGanho();">
+                    <div class="form-group"><label for="pesoInicial">Peso Inicial (kg)</label><input type="number" min="0" id="pesoInicial" value="300" required></div>
+                    <div class="form-group"><label for="gmd">GMD - Ganho Diário (kg)</label><input type="number" step="0.01" min="0" id="gmd" value="0.75" required></div>
+                    <div class="form-group full-width"><label for="dias">Período de Pastagem (Dias)</label><input type="number" min="1" id="dias" value="90" required></div>
+                    <button type="submit" class="btn-calc">Calcular Projeção</button>
+                </form>
+
+                <div class="result-box">
+                    <p>Peso Final Estimado: <strong id="resPesoFinal">0,0 kg</strong></p>
+                    <p>Ganho Total por Animal: <strong id="resGanhoKg">0,0 kg</strong></p>
+                    <p>Rendimento Estimado em Arrobas (@): <strong id="resArrobas">0,0 @</strong></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h3>Gráfico Comparativo de Desempenho Projetado</h3>
+            <div style="height: 280px;"><canvas id="calcChart"></canvas></div>
+        </div>
+    </main>
+
+    <script src="js/chat.js"></script>
+
+    <script>
+        document.getElementById('current-date').innerText = new Date().toLocaleDateString('pt-BR');
+
+        const ctx = document.getElementById('calcChart').getContext('2d');
+        const calcChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Dia 0', 'Dia 30', 'Dia 60', 'Dia 90'],
+                datasets: [{
+                    label: 'Projeção de Peso (kg)',
+                    data: [300, 322.5, 345, 367.5],
+                    borderColor: '#15803d',
+                    backgroundColor: 'rgba(21, 128, 61, 0.1)',
+                    tension: 0.2,
+                    fill: true
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        function calcularLotacao() {
+            const area = parseFloat(document.getElementById('areaHectares').value) || 0;
+            const cabecas = parseFloat(document.getElementById('numCabecas').value) || 0;
+            const peso = parseFloat(document.getElementById('pesoMedio').value) || 0;
+
+            if (area <= 0) return alert("A área deve ser maior que zero.");
+
+            const pesoTotal = cabecas * peso;
+            const totalUA = pesoTotal / 450;
+            const taxaUAha = totalUA / area;
+
+            document.getElementById('resUA').innerText = `${totalUA.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} UA`;
+            document.getElementById('resTaxa').innerText = `${taxaUAha.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} UA/ha`;
+        }
+
+        function calcularGanho() {
+            const pesoInicial = parseFloat(document.getElementById('pesoInicial').value) || 0;
+            const gmd = parseFloat(document.getElementById('gmd').value) || 0;
+            const dias = parseInt(document.getElementById('dias').value) || 0;
+
+            const ganhoTotal = gmd * dias;
+            const pesoFinal = pesoInicial + ganhoTotal;
+            const arrobas = (pesoFinal * 0.52) / 15;
+
+            document.getElementById('resPesoFinal').innerText = `${pesoFinal.toFixed(1)} kg`;
+            document.getElementById('resGanhoKg').innerText = `${ganhoTotal.toFixed(1)} kg`;
+            document.getElementById('resArrobas').innerText = `${arrobas.toFixed(2)} @ (Rend. 52%)`;
+
+            const passo = dias / 3;
+            calcChart.data.labels = [`Dia 0`, `Dia ${Math.round(passo)}`, `Dia ${Math.round(passo * 2)}`, `Dia ${dias}`];
+            calcChart.data.datasets[0].data = [
+                pesoInicial,
+                pesoInicial + (gmd * passo),
+                pesoInicial + (gmd * passo * 2),
+                pesoFinal
+            ];
+            calcChart.update();
+        }
+
+        calcularLotacao();
+        calcularGanho();
+    </script>
+</body>
+</html>

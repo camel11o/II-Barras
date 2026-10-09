@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:3000 https://cdnjs.cloudflare.com;">
+    <title>Fazenda II Barras | Assistente IA</title>
+    <link rel="icon" type="image/png" href="img/II Barras.png">
+    
+    <style>
+        :root { 
+            --bg-main: #f8fafc; 
+            --sidebar: #0f172a; 
+            --card-bg: #ffffff; 
+            --primary: #15803d; 
+            --primary-hover: #166534;
+            --text-dark: #0f172a; 
+            --text-light: #64748b; 
+            --border: #e2e8f0; 
+            --danger: #ef4444; 
+            --chat-ai-bg: #f1f5f9;
+        }
+
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+        }
+
+        body { 
+            background-color: var(--bg-main); 
+            color: var(--text-dark); 
+            display: flex; 
+            min-height: 100vh; 
+        }
+
+        /* BARRA LATERAL (ASIDE) */
+        aside { 
+            width: 260px; 
+            background-color: var(--sidebar); 
+            color: white; 
+            padding: 2rem 1.2rem; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 2rem; 
+            flex-shrink: 0; 
+        }
+
+        aside h2 { 
+            font-size: 1.2rem; 
+            color: #4ade80; 
+            text-align: center; 
+            border-bottom: 1px solid rgba(255,255,255,0.1); 
+            padding-bottom: 1rem; 
+        }
+
+        .menu { 
+            list-style: none; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 0.5rem; 
+        }
+
+        .menu li a { 
+            color: #94a3b8; 
+            text-decoration: none; 
+            padding: 0.8rem 1rem; 
+            border-radius: 8px; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            font-weight: 500; 
+            transition: all 0.2s ease;
+        }
+
+        .menu li a:hover, .menu li a.active { 
+            background-color: var(--primary); 
+            color: white; 
+        }
+
+        /* CONTEÚDO PRINCIPAL */
+        main { 
+            flex: 1; 
+            padding: 2rem; 
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 1.5rem; 
+            flex-shrink: 0;
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            color: var(--text-dark);
+        }
+
+        header p {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-top: 0.2rem;
+        }
+
+        /* PAINEL DO CHAT */
+        .chat-panel {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* CHAT */
+        #chat {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            overflow-y: auto;
+            overscroll-behavior-y: contain;
+            scroll-behavior: smooth;
+            scrollbar-color: #cbd5e1 transparent;
+            scrollbar-width: thin;
+            padding: clamp(1rem, 3vw, 1.75rem);
+            background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+        }
+
+        #chat::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #chat::-webkit-scrollbar-thumb {
+            border-radius: 999px;
+            background: #cbd5e1;
+        }
+
+        #chat::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .mensagem {
+            max-width: 75%;
+            padding: 1rem 1.2rem;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+        }
+
+        .usuario {
+            align-self: flex-end;
+            border-bottom-right-radius: 2px;
+            background: var(--primary);
+            color: white;
+        }
+
+        .ia {
+            align-self: flex-start;
+            border: 1px solid var(--border);
+            border-bottom-left-radius: 2px;
+            background: var(--chat-ai-bg);
+            color: var(--text-dark);
+        }
+
+        .nome {
+            margin-bottom: 0.4rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .usuario .nome { color: #bbf7d0; }
+        .ia .nome { color: var(--primary); }
+
+        /* CAMPO DE DIGITAÇÃO */
+        .entrada {
+            border-top: 1px solid var(--border);
+            padding: 1rem 1.2rem;
+            display: flex;
+            gap: 0.8rem;
+            background: var(--card-bg);
+            align-items: center;
+        }
+
+        #pergunta {
+            flex: 1;
+            padding: 0.8rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            outline: none;
+            background-color: var(--bg-main);
+            color: var(--text-dark);
+            transition: border-color 0.2s ease;
+        }
+
+        #pergunta:focus {
+            border-color: var(--primary);
+            background-color: #ffffff;
+        }
+
+        #enviar {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: background-color 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #enviar:hover {
+            background-color: var(--primary-hover);
+        }
+
+        #enviar:disabled {
+            background-color: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        /* RESPONSIVIDADE */
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+
+            aside {
+                width: 100%;
+                padding: 1rem;
+                gap: 1rem;
+            }
+
+            aside h2 {
+                font-size: 1rem;
+                padding-bottom: 0.5rem;
+            }
+
+            .menu {
+                flex-direction: row;
+                overflow-x: auto;
+            }
+
+            .menu li a {
+                white-space: nowrap;
+                padding: 0.5rem 0.8rem;
+                font-size: 0.85rem;
+            }
+
+            main {
+                padding: 1rem;
+                height: calc(100vh - 120px);
+            }
+
+            .mensagem { max-width: 88%; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- BARRA LATERAL NAVEGAÇÃO -->
+    <aside>
+        <h2>II Barras</h2>
+        <ul class="menu">
+            <li><a href="index.html">📊 Controle Rebanho</a></li>
+            <li><a href="pasto.html">🌱 Manejo Pastos</a></li>
+            <li><a href="sanatorio.html">💉 Saúde e Vacinas</a></li>
+            <li><a href="financeiro.html">💰 Financeiro</a></li>
+            <li><a href="calculos.html">🧮 Calculadora Pecuária</a></li>
+            <li><a href="ia.html" class="active">🤖 Assistente IA</a></li>
+        </ul>
+    </aside>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main>
+        <header>
+            <div>
+                <h1>Assistente de Inteligência Artificial</h1>
+                <p>Consulte dados de pastagem, sanidade, manejo e registros da fazenda em tempo real.</p>
+            </div>
+            <span>Data: <strong id="current-date"></strong></span>
+        </header>
+
+        <!-- ESTRUTURA DO CHAT -->
+     <div class="chat-panel">
+    <div id="chat">
+        <div class="mensagem ia">
+            <div class="nome">IA Fazenda II Barras</div>
+            <div>
+                <b>Assistente de Gestão — Fazenda II Barras</b><br>
+                Consulte informações do sistema ou tire dúvidas técnicas sobre a criação:<br>
+                <ul>
+                    <li><b>Registros do sistema:</b> Manejo, sanidade, pastagens e indicadores financeiros.</li>
+                    <li><b>Suporte técnico:</b> Dúvidas gerais e operacionais sobre os animais.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+            <div class="entrada">
+                <input 
+                    type="text" 
+                    id="pergunta" 
+                    placeholder="Digite sua pergunta sobre o rebanho ou manejo..." 
+                    autocomplete="off"
+                >
+                <button id="enviar">Enviar</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- SCRIPT DO CHAT -->
+    <script>
+        document.getElementById('current-date').innerText = new Date().toLocaleDateString('pt-BR');
+
+        const campoPergunta = document.getElementById("pergunta");
+        const botaoEnviar = document.getElementById("enviar");
+        const chat = document.getElementById("chat");
+
+        // Adiciona uma mensagem ao chat
+        function adicionarMensagem(texto, tipo) {
+            const mensagem = document.createElement("div");
+            mensagem.classList.add("mensagem", tipo);
+
+            const nome = document.createElement("div");
+            nome.classList.add("nome");
+
+            if (tipo === "usuario") {
+                nome.textContent = "Você";
+            } else {
+                nome.textContent = "IA Fazenda II Barras";
+            }
+
+            const conteudo = document.createElement("div");
+            conteudo.textContent = texto;
+
+            mensagem.appendChild(nome);
+            mensagem.appendChild(conteudo);
+
+            chat.appendChild(mensagem);
+
+            // Rola até o final
+            chat.scrollTop = chat.scrollHeight;
+
+            return mensagem;
+        }
+
+        // Envia a pergunta para a API
+        async function enviarPergunta() {
+            const pergunta = campoPergunta.value.trim();
+
+            if (!pergunta) {
+                return;
+            }
+
+            // Exibe mensagem do usuário
+            adicionarMensagem(pergunta, "usuario");
+            campoPergunta.value = "";
+
+            // Desativa controles
+            botaoEnviar.disabled = true;
+            botaoEnviar.textContent = "Aguarde...";
+
+            // Indicador de carregamento
+            const carregando = adicionarMensagem("A IA está analisando os dados da fazenda...", "ia");
+
+            try {
+                const resposta = await fetch("/api/ia/perguntar", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        pergunta: pergunta
+                    })
+                });
+
+                const dados = await resposta.json();
+
+                // Remove mensagem temporária
+                carregando.remove();
+
+                if (!resposta.ok) {
+                    adicionarMensagem(dados.erro || "Ocorreu um erro ao processar a resposta.", "ia");
+                    return;
+                }
+
+                // Exibe resposta da IA
+                adicionarMensagem(dados.resposta, "ia");
+
+            } catch (erro) {
+                console.error("Erro:", erro);
+                carregando.remove();
+                adicionarMensagem("Não foi possível conectar ao servidor da IA.", "ia");
+            } finally {
+                botaoEnviar.disabled = false;
+                botaoEnviar.textContent = "Enviar";
+                campoPergunta.focus();
+            }
+        }
+
+        // Eventos de clique e tecla Enter
+        botaoEnviar.addEventListener("click", enviarPergunta);
+
+        campoPergunta.addEventListener("keydown", function (evento) {
+            if (evento.key === "Enter" && !evento.shiftKey) {
+                evento.preventDefault();
+                enviarPergunta();
+            }
+        });
+    </script>
+</body>
+</html>
