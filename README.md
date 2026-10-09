@@ -1,30 +1,31 @@
 # 🐂 Fazenda II Barras — Gestão Pecuária
 
-![Electron](https://img.shields.io/badge/Electron-Desktop-47A248?logo=electron&logoColor=white)
-![Node.js](https://img.shields.io/badge/Node.js-Backend-339933?logo=nodedotjs&logoColor=white)
-![Express](https://img.shields.io/badge/Express-Framework-000000?logo=express&logoColor=white)
-![SQLite](https://img.shields.io/badge/SQLite-Database-003B57?logo=sqlite&logoColor=white)
-![PWA](https://img.shields.io/badge/PWA-Ready-5A0FC8?logo=pwa&logoColor=white)
+[![Electron](https://img.shields.io/badge/Electron-Desktop-47A248?logo=electron&logoColor=white)](https://www.electronjs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-Backend-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![Express](https://img.shields.io/badge/Express-Framework-000000?logo=express&logoColor=white)](https://expressjs.com/)
+[![SQLite](https://img.shields.io/badge/SQLite-Database-003B57?logo=sqlite&logoColor=white)](https://www.sqlite.org/)
+[![PWA](https://img.shields.io/badge/PWA-Ready-5A0FC8?logo=pwa&logoColor=white)](https://web.dev/progressive-web-apps/)
 
-O **Fazenda II Barras** é um sistema de controle e gerenciamento pecuário projetado para simplificar a administração do rebanho, acompanhamento sanitário, manejo de lotes e controle operacional. Desenvolvido como aplicação desktop em Electron e com integração PWA para acesso móvel em campo.
+O **Fazenda II Barras** é um sistema completo de controle e gerenciamento pecuário projetado para simplificar a administração do rebanho, registro de lote, acompanhamento sanitário e controle financeiro. Unindo a robustez de uma aplicação desktop com a praticidade de sincronização PWA para acesso móvel em campo.
 
 ---
 
 ## 📌 Funcionalidades Principais
 
 - **Gestão do Rebanho:** Cadastro detalhado de animais, identificação por brinco/número, raça, sexo e histórico.
-- **Manejo e Saúde:** Registro de vacinações, vermifugações, pesagens e controle de ganho de peso.
-- **Controle de Lotes e Pastos:** Organização dos animais por lotes e acompanhamento da rotação de pastagens.
-- **Modo PWA / Sync Móvel:** Suporte para consulta e lançamentos rápidos em dispositivos móveis no campo.
+- **Manejo e Saúde:** Registro de vacinações, vermifugações, pesagens e acompanhamento de ganho de peso.
+- **Controle de Lotes e Pastos:** Organização dos animais por lotes e acompanhamento de rotação de pastagens.
+- **Gestão Financeira:** Controle de compras, vendas, custos operacionais e receitas da propriedade.
+- **Modo PWA / Offline:** Suporte para consulta e lançamentos diretamente no campo sem dependência de internet constante.
 
 ---
 
 ## 🛠️ Tecnologias Utilizadas
 
-- **Desktop App:** [Electron](https://www.electronjs.org/)
-- **Backend / API:** [Node.js](https://nodejs.org/) + [Express](https://expressjs.com/)
+- **Desktop Runtime:** [Electron](https://www.electronjs.org/)
+- **Backend:** [Node.js](https://nodejs.org/) + [Express](https://expressjs.com/)
 - **Banco de Dados:** [SQLite](https://www.sqlite.org/)
-- **Frontend & PWA:** HTML5, CSS3, JavaScript (ES6+), Service Workers
+- **Frontend / PWA:** HTML5, CSS3, JavaScript (ES6+), Service Workers para suporte offline
 
 ---
 
@@ -32,6 +33,7 @@ O **Fazenda II Barras** é um sistema de controle e gerenciamento pecuário proj
 
 ### Pré-requisitos
 
+Antes de começar, certifique-se de ter instalado em sua máquina:
 - [Node.js](https://nodejs.org/) (versão LTS recomendada)
 - [Git](https://git-scm.com/)
 
