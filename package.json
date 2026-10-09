@@ -1,0 +1,36 @@
+{
+  "name": "fazenda-ii-barras",
+  "version": "1.0.0",
+  "description": "Sistema de Gestão Agrícola - Fazenda II Barras",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "sqlite3": "^5.1.7",
+    "sql.js": "^1.11.0"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.fazendaiibarras.app",
+    "productName": "Fazenda II Barras",
+    "win": {
+      "target": "nsis"
+    },
+    "files": [
+      "**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "node_modules/sql.js/dist/sql-wasm.wasm",
+        "to": "sql-wasm.wasm"
+      }
+    ]
+  }
+}
